@@ -4,6 +4,7 @@ services:
     image: hashicorp/vault
     restart: always
     volumes:
+      - "vault-logs:/vault/logs"
       - "vault-data:/vault/file"
       - "./helpers:/helpers"
     ports:
@@ -14,5 +15,6 @@ services:
     entrypoint: "vault server -config=/helpers/vault-config.hcl"
 
 volumes:
+  vault-logs:
   vault-data:
     external: true
