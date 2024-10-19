@@ -1,4 +1,4 @@
-# vault-demo
+# vault-lab
 This is a Hashicorp Vault setup with persistent storage, so it can be used together
 with other research projects (ex: Jenkins integration).
 
@@ -9,8 +9,8 @@ and run bootstrap scripts. The bootstrap scripts will setup the necessary settin
 (roles, secrets, etc) to be able to use Hashicorp Vault.
 
 # Getting started
-After Vault has started, you should use the `VAULT_TOKEN=`output and copy&paste it to login
-to Hashicorp Vault on a browser window on (http://localhost:8200/ui)
+After Vault has started, you should use the `VAULT_TOKEN=hvs.xxxxxxxxxxxxxx`output and
+copy&paste it to login to Hashicorp Vault on a browser window on (http://localhost:8200/ui)
 
 ## Cleanup
 Execute `./cleanVault.sh` script to cleanup all lingering data
