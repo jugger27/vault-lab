@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 apk add --no-cache jq curl
 export VAULT_ADDR=http://localhost:8200
 root_token=$(cat /helpers/keys.json | jq -r '.root_token')
