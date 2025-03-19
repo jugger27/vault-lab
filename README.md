@@ -3,17 +3,24 @@ This is a Hashicorp Vault setup with persistent storage, so it can be used toget
 with other research projects (ex: Jenkins integration).
 
 ## Deployment
-Execute `./startVault.sh` script which will run the necessary steps for
-deploying HashiCorp Vault. This will create an Docker external volume, run docker compose
-and run bootstrap scripts. The bootstrap scripts will setup the necessary settings
-(roles, secrets, etc) to be able to use Hashicorp Vault.
+Execute `docker compose up -d` to start Hashicorp Vault, together with the initialization
+scripts. This will create `keys`, `data`, `logs` as persistent data.
 
-# Getting started
-After Vault has started, you should use the `VAULT_TOKEN=hvs.xxxxxxxxxxxxxx`output and
-copy&paste it to login to Hashicorp Vault on a browser window on (http://localhost:8200/ui)
+The root token is written to the file `keys\token`
 
-## Cleanup
-Execute `./cleanVault.sh` script to cleanup all lingering data
+## Access Vault
+You can use the following ways to access the vault:
+
+### GUI
+Access http://localhost:8200 and use the token value to authenticate
+
+### CLI
+Execute `vault login token=$(cat keys/token)`
+
+
+## Reset
+Execute `./reset_vault.sh` script to cleanup all data
+Note that this will **destroy all persistent data**.
 
 ### Disclaimers
 - Some info and scripts of this setup has been extracted from other sites, for which I cannot
