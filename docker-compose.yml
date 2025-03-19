@@ -1,20 +1,31 @@
 ---
 services:
   vault:
-    image: hashicorp/vault:1.18
+    image: hashicorp/vault
     restart: always
+    environment:
+      VAULT_LOCAL_CONFIG: '{"storage": {"file": {"path": "/vault/file"}}, "listener": [{"tcp": { "address": "0.0.0.0:8200", "tls_disable": true}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h", "ui": true}'
     volumes:
-      - "vault-logs:/vault/logs"
-      - "vault-data:/vault/file"
-      - "./helpers:/helpers"
+      - "./logs:/vault/logs"
+      - "./data:/vault/file"
     ports:
       - "8200:8200"
     cap_add:
       - IPC_LOCK
-    container_name: vault
-    entrypoint: "vault server -config=/helpers/vault-config.hcl"
+    command:
+      - "server"
 
-volumes:
-  vault-logs:
-  vault-data:
-    external: true
+  vault-init:
+    image: hashicorp/vault
+    command:
+      - "sh"
+      - "-c"
+      - "/helpers/init.sh"
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+    volumes:
+      - "./helpers:/helpers"
+      - "./keys:/keys"
+    depends_on:
+      vault:
+        condition: service_started

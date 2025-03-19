@@ -1,33 +1,31 @@
 #!/bin/sh
-#
-apk add --no-cache jq curl
-export VAULT_ADDR=http://localhost:8200
-root_token=$(cat /helpers/keys.json | jq -r '.root_token')
+set -ex
+apk add --no-cache jq
+
+export VAULT_FORMAT=json
 
 unseal_vault() {
-  export VAULT_TOKEN=$root_token
-  vault operator unseal -address=${VAULT_ADDR} $(cat /helpers/keys.json | jq -r '.keys[0]')
-  vault login token=$VAULT_TOKEN
+  vault operator unseal $(cat /keys/unseal)
+  vault login token=$(cat /keys/token)
 }
 
-if [[ -n "$root_token" ]]
+if [[ -f /keys/init.json ]]
 then
   echo "Vault already initialized"
   unseal_vault
 else
   echo "Vault not initialized"
-  curl --request POST --data '{"secret_shares": 1, "secret_threshold": 1}' $VAULT_ADDR/v1/sys/init > /helpers/keys.json
-  root_token=$(cat /helpers/keys.json | jq -r '.root_token')
-
+  vault operator init -key-shares=1 -key-threshold=1 > /keys/init.json
+  cat /keys/init.json | jq -r '.root_token' > /keys/token
+  cat /keys/init.json | jq -r '.unseal_keys_hex[0]' > /keys/unseal
   unseal_vault
 
-  vault secrets enable -version=2 kv
+  vault secrets enable -path=secret -version=2 kv
   vault auth enable approle
   vault policy write admin-policy /helpers/admin-policy.hcl
   vault write auth/approle/role/dev-role token_policies="admin-policy"
-  vault read -format=json auth/approle/role/dev-role/role-id \
-    | jq -r '.data.role_id' > /helpers/role_id
-  vault write -format=json -f auth/approle/role/dev-role/secret-id \
-    | jq -r '.data.secret_id' > /helpers/secret_id
+  vault read auth/approle/role/dev-role/role-id \
+    | jq -r '.data.role_id' > /keys/role_id
+  vault write -f auth/approle/role/dev-role/secret-id \
+    | jq -r '.data.secret_id' > /keys/secret_id
 fi
-printf "\n\nVAULT_TOKEN=%s\n\n" $VAULT_TOKEN
